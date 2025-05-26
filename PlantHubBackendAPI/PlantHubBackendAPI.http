@@ -1,0 +1,6 @@
+@PlantHubBackendAPI_HostAddress = http://localhost:5111
+
+GET {{PlantHubBackendAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
