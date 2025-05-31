@@ -20,6 +20,7 @@ namespace Domain.Model
         public bool IsBlocked { get; set; }
         public DateTime CreatedAt { get; set; }
         public UserRole Role { get; set; }
+        public virtual ICollection< Provider> Providers { get; set; }
 
     }
 }

@@ -29,7 +29,7 @@ namespace PlantHubBackendAPI.Controllers
             }
             catch(Exception ex)
             {
-                return StatusCode(500, new ApiResponse<string>(false, "Server Error", null));
+                return StatusCode(500, new ApiResponse<string>(false, "Server Error", null,ex.Message));
             }
         }
 
@@ -49,7 +49,7 @@ namespace PlantHubBackendAPI.Controllers
             }
             catch(Exception ex)
             {
-                return StatusCode(500, new ApiResponse<string>(false, "Server Error", null));
+                return StatusCode(500, new ApiResponse<string>(false, "Server Error", null,ex.Message));
             }
         }
     }

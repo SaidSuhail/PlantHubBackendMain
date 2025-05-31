@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Application.Interface;
 using Application.Mapper;
 using Application.Services;
@@ -52,6 +52,13 @@ builder.Services.AddAutoMapper(typeof(ProfileMapper));
 //service registration
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICloudinaryServices, CloudinaryServices>();
+builder.Services.AddScoped<IPlantRepository, PlantRepository>();
+builder.Services.AddScoped<IPlantService,PlantService>();
 // JWT Authentication Configuration 
 builder.Services.AddAuthentication(options =>
 {
@@ -59,18 +66,37 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
 .AddJwtBearer(o =>
 {
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        ValidateIssuer = true,
+        ValidateAudience = true,
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = true
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
     };
-    o.RequireHttpsMetadata = true;  // Use true in production for security
+
+    o.RequireHttpsMetadata = false; // Use `true` in production with HTTPS
     o.SaveToken = true;
+});
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:5173")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        });
 });
 
 
@@ -85,6 +111,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowFrontend");
+
+app.UseAuthentication();
+app.UseMiddleware<PlantHubBackendAPI.MiddleWare.UserIdMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

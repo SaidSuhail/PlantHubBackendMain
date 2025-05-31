@@ -83,6 +83,29 @@ namespace Application.Services
             };
         }
 
+        //private string GenerateToken(User user)
+        //{
+        //    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
+        //    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        //    var claims = new[]
+        //    {
+        //        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        //        new Claim(ClaimTypes.Name, user.UserName),
+        //        new Claim(ClaimTypes.Role, user.Role.ToString()),
+        //        new Claim(ClaimTypes.Email, user.UserEmail)
+        //    };
+
+        //    var token = new JwtSecurityToken(
+        //        claims: claims,
+        //        signingCredentials: credentials,
+        //        expires: DateTime.UtcNow.AddDays(1)
+        //    );
+
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
+
+
         private string GenerateToken(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
@@ -90,16 +113,18 @@ namespace Application.Services
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, user.Role.ToString()),
-                new Claim(ClaimTypes.Email, user.UserEmail)
-            };
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
+            new Claim(ClaimTypes.Email, user.UserEmail)
+        };
 
             var token = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                signingCredentials: credentials,
-                expires: DateTime.UtcNow.AddDays(1)
+                expires: DateTime.UtcNow.AddDays(1),
+                signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
