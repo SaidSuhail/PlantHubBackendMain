@@ -24,9 +24,15 @@ namespace PlantHubBackendAPI.MiddleWare
             if (context.User.Identity?.IsAuthenticated == true)
             {
                 var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier);
+                var roleClaim = context.User.FindFirst(ClaimTypes.Role);
+
                 if (userIdClaim != null)
                 {
                     context.Items["UserId"] = userIdClaim.Value;
+                }
+                if(roleClaim  != null)
+                {
+                    context.Items["UserRole"] = roleClaim.Value;
                 }
             }
 

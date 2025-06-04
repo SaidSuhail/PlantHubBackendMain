@@ -18,9 +18,15 @@ namespace Application.Mapper
             CreateMap<Category, CategoryDto>().ReverseMap();
             CreateMap<Category, CategoryAddDto>().ReverseMap();
             CreateMap<Plant, AddPlantDto>().ReverseMap();
+            CreateMap<Plant, UpdatePlantDto>().ReverseMap();
             CreateMap<Plant, PlantWithCategoryDto>()
                 .ForMember(dest=>dest.CategoryName,opt=>opt.MapFrom(src=>src.Category != null?src.Category.CategoryName:null)).ReverseMap();
-
+            CreateMap<Plan, PlanDto>().ReverseMap();
+            CreateMap<UserPlan, UserPlanDto>()
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
+                .ReverseMap()
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
+          
         }
     }
 }

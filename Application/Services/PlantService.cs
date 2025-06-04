@@ -18,12 +18,14 @@ namespace Application.Services
         private readonly ICategoryRepository _categoryRepo;
         private readonly IMapper _mapper;
         private readonly ICloudinaryServices _cloudinaryServices;
-        public PlantService(IPlantRepository plantRepo,ICategoryRepository categoryRepo, IMapper mapper, ICloudinaryServices cloudinaryServices)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public PlantService(IPlantRepository plantRepo,IHttpContextAccessor httpContextAccessor, ICategoryRepository categoryRepo, IMapper mapper, ICloudinaryServices cloudinaryServices)
         {
             _plantRepo = plantRepo;
             _categoryRepo = categoryRepo;
             _mapper = mapper;
             _cloudinaryServices = cloudinaryServices;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task AddPlant(AddPlantDto plantDto, IFormFile image)
         {
@@ -31,7 +33,15 @@ namespace Application.Services
             {
             string imageUrl = await _cloudinaryServices.UploadImageAsync(image);
             var plant = _mapper.Map<Plant>(plantDto);
-            plant.ImageUrl = imageUrl;
+                var userId = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
+                var userRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
+
+                var createdBy = string.IsNullOrEmpty(userId) ? "Self" : $"{userRole} - {userId}";
+
+                plant.ImageUrl = imageUrl;
+                plant.CreatedAt = DateTime.UtcNow;
+
+                plant.CreatedBy = createdBy;
             await _plantRepo.AddPlantAsync(plant);
             }
             catch(DbUpdateException ex)
@@ -66,70 +76,49 @@ namespace Application.Services
                 return false;
             return await _plantRepo.DeletePlantAsync(plant);
         }
-        //public async Task UpdatePlant(int id,UpdatePlantDto plantDto,IFormFile? image)
-        //{
-        //    var plant = await _plantRepo.GetPlantByIdAsync(id);
-        //    if(plant == null)
-        //        throw new Exception("Plant not found");
-        //    plant.Name = plantDto.Name ?? plant.Name;
-        //    plant.LatinName = plantDto.LatinName ?? plant.LatinName;
-        //    plant.Description = plantDto.Description ?? plant.Description;
-        //    plant.Price = plantDto.Price ?? plant.Price;
-        //    plant.Color = plantDto.Color ?? plant.Color;
-        //    plant.Stock = plantDto.Stock ?? plant.Stock;
-        //    //plant.CategoryId = plantDto.CategoryId ?? plant.CategoryId;
-        //    plant.ProviderId = plantDto.ProviderId ?? plant.ProviderId;
-        //    // Validate CategoryId if it is changed
-        //    if (plantDto.CategoryId != null && plantDto.CategoryId != plant.CategoryId)
-        //    {
-        //        var categoryExists = await _categoryRepo.CategoryExistsAsync(plantDto.CategoryId.Value);
-        //        if (!categoryExists)
-        //            throw new Exception("Category does not exist.");
-        //        plant.CategoryId = plantDto.CategoryId.Value;
-        //    }
-        //    if (image!=null && image.Length > 0)
-        //    {
-        //        string imageUrl = await _cloudinaryServices.UploadImageAsync(image);
-        //        plant.ImageUrl = imageUrl;
-        //    }
-        //    await _plantRepo.UpdatePlantAsync(plant);
-        //}
-
+   
         public async Task UpdatePlant(int id, UpdatePlantDto plantDto, IFormFile? image)
         {
             var plant = await _plantRepo.GetPlantByIdAsync(id);
             if (plant == null)
                 throw new Exception("Plant not found");
+            var userId = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
+            var userRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
 
-            if (!string.IsNullOrEmpty(plantDto.Name))
+            var createdBy = string.IsNullOrEmpty(userId) ? "Self" : $"{userRole} - {userId}";
+            plant.UpdatedAt = DateTime.UtcNow;
+            plant.UpdatedBy = createdBy;
+            if (!string.IsNullOrEmpty(plantDto.Name) && plantDto.Name.ToLower() != "string")
                 plant.Name = plantDto.Name;
 
-            if (!string.IsNullOrEmpty(plantDto.LatinName))
+            if (!string.IsNullOrEmpty(plantDto.LatinName) && plantDto.LatinName.ToLower() != "string")
                 plant.LatinName = plantDto.LatinName;
 
-            if (!string.IsNullOrEmpty(plantDto.Description))
+            if (!string.IsNullOrEmpty(plantDto.Description) && plantDto.Description.ToLower() != "string")
                 plant.Description = plantDto.Description;
 
-            if (plantDto.Price.HasValue)
+            if (plantDto.Price.HasValue && plantDto.Price.Value != 0)
                 plant.Price = plantDto.Price.Value;
 
-            if (!string.IsNullOrEmpty(plantDto.Color))
+            if (!string.IsNullOrEmpty(plantDto.Color) && plantDto.Color.ToLower() != "string")
                 plant.Color = plantDto.Color;
 
-            if (plantDto.Stock.HasValue)
+            if (plantDto.Stock.HasValue && plantDto.Stock.Value != 0)
                 plant.Stock = plantDto.Stock.Value;
 
-            //if (plantDto.ProviderId.HasValue)
-            //    plant.ProviderId = plantDto.ProviderId.Value;
-
-            // only if CategoryId is provided
-            if (plantDto.CategoryId.HasValue)
+            if (plantDto.CategoryId.HasValue && plantDto.CategoryId.Value != 0)
             {
                 var categoryExists = await _categoryRepo.CategoryExistsAsync(plantDto.CategoryId.Value);
                 if (!categoryExists)
                     throw new Exception("Category does not exist.");
 
                 plant.CategoryId = plantDto.CategoryId.Value;
+            }
+
+            if (plantDto.ProviderId.HasValue && plantDto.ProviderId.Value != 0)
+            {
+                // You might want to validate provider as well if needed
+                plant.ProviderId = plantDto.ProviderId.Value;
             }
 
             if (image != null && image.Length > 0)
@@ -140,6 +129,7 @@ namespace Application.Services
 
             await _plantRepo.UpdatePlantAsync(plant);
         }
+
 
 
         public async Task<List<PlantWithCategoryDto>>SearchPlant(string search)

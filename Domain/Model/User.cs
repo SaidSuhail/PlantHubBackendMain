@@ -8,7 +8,7 @@ using Domain.Enum;
 
 namespace Domain.Model
 {
-     public class User
+     public class User:BaseEntity
     {
         public int Id { get; set; }
         [Required]
@@ -18,9 +18,11 @@ namespace Domain.Model
         public string? Password { get; set; }
         public string? Phone { get; set; }
         public bool IsBlocked { get; set; }
-        public DateTime CreatedAt { get; set; }
         public UserRole Role { get; set; }
+        public  enum LoginType { Local,Google}
+        public LoginType loginType { get; set; }
         public virtual ICollection< Provider> Providers { get; set; }
+        public virtual ICollection<UserPlan> UserPlans { get; set; }
 
     }
 }

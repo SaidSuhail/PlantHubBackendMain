@@ -81,9 +81,18 @@ namespace PlantHubBackendAPI.Controllers
             return success ? Ok("Deleted successfully") : NotFound("Plant not found");
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult>Update(int id, [FromForm]UpdatePlantDto dto ,IFormFile? image)
         {
+            // Log incoming values to check what is bound
+            Console.WriteLine("Name: " + dto.Name);
+            Console.WriteLine("LatinName: " + dto.LatinName);
+            Console.WriteLine("Description: " + dto.Description);
+            Console.WriteLine("Price: " + dto.Price);
+            Console.WriteLine("Color: " + dto.Color);
+            Console.WriteLine("CategoryId: " + dto.CategoryId);
+            Console.WriteLine("ProviderId: " + dto.ProviderId);
+            Console.WriteLine("Stock: " + dto.Stock);
             await _plantService.UpdatePlant(id, dto, image);
             return Ok("Updated successfully");
         }

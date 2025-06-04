@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.Google;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SupportNonNullableReferenceTypes();
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -59,6 +62,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICloudinaryServices, CloudinaryServices>();
 builder.Services.AddScoped<IPlantRepository, PlantRepository>();
 builder.Services.AddScoped<IPlantService,PlantService>();
+builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddHttpContextAccessor();
 // JWT Authentication Configuration 
 builder.Services.AddAuthentication(options =>
 {
@@ -84,6 +90,12 @@ builder.Services.AddAuthentication(options =>
 
     o.RequireHttpsMetadata = false; // Use `true` in production with HTTPS
     o.SaveToken = true;
+})
+.AddGoogle("Google", options =>
+{
+    options.ClientId = builder.Configuration["Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+    options.CallbackPath = "/auth/google/callback";  // Make sure this matches your Google Cloud redirect URI
 });
 
 
@@ -110,6 +122,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Remove("Cross-Origin-Opener-Policy");
+    await next();
+});
 
 app.UseCors("AllowFrontend");
 

@@ -11,5 +11,7 @@ namespace Application.Interface
     {
         Task<bool> Register(UserRegisterDto userRegisterDto);
         Task<UserResponseDto> Login(UserLoginDto userLoginDto);
+        Task<UserResponseDto> GoogleLoginAsync(GoogleLoginDto googleLoginDto);
+        Task<UserResponseDto> GoogleLoginOnlyAsync(GoogleLoginDto googleLoginDto);
     }
 }

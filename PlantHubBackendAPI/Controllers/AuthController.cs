@@ -52,5 +52,29 @@ namespace PlantHubBackendAPI.Controllers
                 return StatusCode(500, new ApiResponse<string>(false, "Server Error", null,ex.Message));
             }
         }
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto googleLoginDto)
+        {
+            try
+            {
+                var res = await _authService.GoogleLoginAsync(googleLoginDto);
+                if (!string.IsNullOrEmpty(res.Error))
+                    return BadRequest(new ApiResponse<string>(false, res.Error, "[]"));
+                return Ok(new ApiResponse<object>(true, "Google Login Successful", res));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<string>(false, "Server Error", null, ex.Message));
+            }
+        }
+
+        [HttpPost("google-logins")]
+        public async Task<IActionResult> GoogleLoginOnly(GoogleLoginDto dto)
+        {
+            var result = await _authService.GoogleLoginOnlyAsync(dto);
+            if (result.Error != null)
+                return BadRequest(result.Error);
+            return Ok(result);
+        }
     }
 }

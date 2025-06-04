@@ -19,7 +19,9 @@ namespace Infrastructure.Context
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<BookingItem> BookItems { get; set; }
         public DbSet<Plan> Plans { get; set; }
+        public DbSet<UserPlan> Userplans { get; set; }
         public DbSet<UserAddress> UserAddress { get;set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,7 +30,8 @@ namespace Infrastructure.Context
 
             modelBuilder.Entity<User>()
                 .Property(x => x.Role)
-                .HasDefaultValue(UserRole.User);
+                .HasDefaultValue(UserRole.User)
+                .HasConversion<string>();
             modelBuilder.Entity<User>()
                 .Property(i => i.IsBlocked)
                 .HasDefaultValue(false);
@@ -53,7 +56,18 @@ namespace Infrastructure.Context
                 .WithOne(b => b.UserAddress)
                 .HasForeignKey(b => b.UserAddressId)
                 .OnDelete(DeleteBehavior.Restrict);
-
+            modelBuilder.Entity<User>()
+                .Property(u => u.loginType)
+                .HasConversion<string>();
+            modelBuilder.Entity<UserPlan>()
+                .HasOne(up => up.User)
+                .WithMany(u => u.UserPlans)
+                .HasForeignKey(up => up.UserId);
+            modelBuilder.Entity<UserPlan>()
+                .HasOne(up => up.Plan)
+                .WithMany(p => p.UserPlans)
+                .HasForeignKey(up => up.PlanId);
+                
 
             // BookingItem -> Booking (Cascade delete OK)
             modelBuilder.Entity<BookingItem>()
