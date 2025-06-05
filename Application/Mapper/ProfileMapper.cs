@@ -26,6 +26,9 @@ namespace Application.Mapper
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
                 .ReverseMap()
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
+            CreateMap<AddUserPlanDto, UserPlan>();
+            //CreateMap<UserPlan, UserPlanDto>();
+
           
         }
     }

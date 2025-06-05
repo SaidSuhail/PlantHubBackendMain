@@ -64,6 +64,8 @@ builder.Services.AddScoped<IPlantRepository, PlantRepository>();
 builder.Services.AddScoped<IPlantService,PlantService>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddScoped<IUserPlanRepository, UserPlanRepository>();
+builder.Services.AddScoped<IUserPlanService, UserPlanService>();
 builder.Services.AddHttpContextAccessor();
 // JWT Authentication Configuration 
 builder.Services.AddAuthentication(options =>
