@@ -33,7 +33,6 @@ namespace PlantHubBackendAPI.Controllers
             var result = await _userPlanService.GetUsersPlan(userId);
             return Ok(result);
         }
-        // ✅ NEW endpoint to get all user plans
         [HttpGet("All")]
         public async Task<IActionResult> GetAllUserPlans()
         {
