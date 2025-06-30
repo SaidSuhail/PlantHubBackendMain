@@ -12,5 +12,7 @@ namespace Application.Interface
     {
         Task<User?> GetUserByIdAsync(int userId);
         Task ChangeUserRoleAsync(User user, UserRole newRole);
+        Task<List<Provider>> GetAllProvidersAsync();
+
     }
 }

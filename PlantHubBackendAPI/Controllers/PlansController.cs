@@ -1,11 +1,14 @@
 ﻿using Application.DTOs;
 using Application.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace PlantHubBackendAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class PlansController:ControllerBase
     {
         private readonly IPlanService _planService;
@@ -13,37 +16,43 @@ namespace PlantHubBackendAPI.Controllers
         {
             _planService = planService;
         }
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PlanDto>>> GetAll()
+        public async Task<ActionResult<ApiResponse<IEnumerable<PlanDto>>>> GetAll()
         {
-            var plans = await _planService.GetAllPlansAsync();
-            return Ok(plans);
+           var response = await _planService.GetAllPlansAsync();
+            return StatusCode(response.Success ? 200 : 500, response);
         }
         [HttpGet("{id}")]
-        public async Task<ActionResult<PlanDto>>GetById(int id)
+        public async Task<ActionResult<ApiResponse<PlanDto>>>GetById(int id)
         {
-            var plan = await _planService.GetPlanByIdAsync(id);
-            if (plan == null) return NotFound();
-            return Ok(plan);
+            var response = await _planService.GetPlanByIdAsync(id);
+            return StatusCode(response.Success ? 200 : 400,response);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult<PlanDto>>Create(PlanDto planDto)
+        public async Task<ActionResult<ApiResponse<PlanDto>>>Create(PlanDto planDto)
         {
-            var createdPlan = await _planService.CreatePlanAsync(planDto);
-            return CreatedAtAction(nameof(GetById), new { id = createdPlan.Id }, createdPlan);
+            var response = await _planService.CreatePlanAsync(planDto);
+            if (!response.Success)
+            {
+                return StatusCode(500, response);
+            }
+            return CreatedAtAction(nameof(GetById), new { id = response.Data?.Id }, response);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPatch("{id}")]
-        public async Task<IActionResult>Update(int id, [FromBody]UpdatePlanDto updateDto)
+        public async Task<ActionResult<ApiResponse<PlanDto>>>Update(int id, [FromBody]UpdatePlanDto updateDto)
         {
-            var updatedPlan = await _planService.UpdatePlanAsync(id, updateDto);
-            if (updatedPlan == null) return NotFound();
-            return Ok(updatedPlan);
+            var response = await _planService.UpdatePlanAsync(id, updateDto);
+            return StatusCode(response.Success ? 200 : 400, response);
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<ApiResponse<bool>>> Delete(int id)
         {
-            await _planService.DeletePlanAsync(id);
-            return NoContent();
+           var response =  await _planService.DeletePlanAsync(id);
+            return StatusCode(response.Success ? 200 : 400, response);
         }
 
     }

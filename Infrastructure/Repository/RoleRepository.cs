@@ -44,5 +44,12 @@ namespace Infrastructure.Repository
             }
             await _context.SaveChangesAsync();
         }
+        public async Task<List<Provider>> GetAllProvidersAsync()
+        {
+            return await _context.Providers
+                .Include(p => p.User) // to access UserName, UserEmail
+                .Where(p => p.IsActive)
+                .ToListAsync();
+        }
     }
 }

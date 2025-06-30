@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Domain.Enum;
 namespace Domain.Model
 {
        public class Plant:BaseEntity
@@ -16,6 +16,7 @@ namespace Domain.Model
         public decimal Price { get; set; }
         public string? ImageUrl { get; set; }
         public string Color { get; set; }
+        public CareLevel CareLevel { get; set; }
 
         public int CategoryId { get; set; }
         public int ProviderId { get; set; }

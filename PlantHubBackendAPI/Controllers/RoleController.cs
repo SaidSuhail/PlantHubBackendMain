@@ -16,28 +16,31 @@ namespace PlantHubBackendAPI.Controllers
         {
             _roleService = roleService;
         }
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("Change-Role")]
         public async Task<IActionResult> ChangeUserRole([FromBody] ChangeRoleDTO changeRoleDTO)
         {
-            try
-            {
-
                 if (changeRoleDTO == null || string.IsNullOrWhiteSpace(changeRoleDTO.NewRole))
                 {
                     return BadRequest(new ApiResponse<string>(false, "invalid input data", null));
                 }
-                var result = await _roleService.ChangeUserRole(changeRoleDTO);
-                if (!result)
+                var response = await _roleService.ChangeUserRole(changeRoleDTO);
+                if (!response.Success)
                 {
-                    return NotFound(new ApiResponse<string>(false, "User not found or role update failed", null));
+                    if (response.Message == "User Not Found") 
+                        return NotFound(response);
+                    return BadRequest(response);
                 }
-                return Ok(new ApiResponse<string>(true, "Role Updated successfully", null));
-                }
-                catch(Exception ex)
-                {
-                    return StatusCode(500, new ApiResponse<string>(false, "Server error", null,ex.Message));
-                }
+                return Ok(response);
+            
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("providers")]
+        public async Task<IActionResult> GetAllProviders()
+        {
+            var response = await _roleService.GetAllProvidersAsync();
+            return Ok(response);
+        }
+
     }
 }

@@ -9,9 +9,9 @@ namespace Application.Interface
 {
    public interface ICategoryService
     {
-        Task<List<CategoryDto>> GetCategories();
+        Task<ApiResponse<List<CategoryDto>>> GetCategories();
         Task<ApiResponse<CategoryAddDto>> AddCategory(CategoryAddDto category);
         Task<ApiResponse<string>> RemoveCategory(int id);
-        Task<bool> CategoryExistsAsync(int categoryId);
+        Task<ApiResponse<bool>> CategoryExistsAsync(int categoryId);
     }
 }

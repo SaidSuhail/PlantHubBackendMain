@@ -15,6 +15,7 @@ namespace Application.Interface
         Task<List<UserPlanDto>> GetUsersPlan(int userId);
         Task<ApiResponse<string>> UnsubscribePlan(int userPlanId);
 
+        Task<List<UserPlanDto>> GetAllUserPlansAsync();
 
     }
 }

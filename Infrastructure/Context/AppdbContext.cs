@@ -17,13 +17,17 @@ namespace Infrastructure.Context
         public DbSet<Plant> Plants { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Booking> Bookings { get; set; }
-        public DbSet<BookingItem> BookItems { get; set; }
+        public DbSet<BookingItem> BookingItems { get; set; }
         public DbSet<Plan> Plans { get; set; }
         public DbSet<UserPlan> Userplans { get; set; }
         public DbSet<UserAddress> UserAddress { get;set; }
+        public DbSet<RoleChangeRequest> RoleChangeRequests { get; set; }
 
-
-
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Service> Services { get; set; }
+        public DbSet<ServiceBookingItem> ServiceBookingItems { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -51,6 +55,12 @@ namespace Infrastructure.Context
                 .WithMany(a => a.Bookings)
                 .HasForeignKey(b => b.UserAddressId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Booking>()
+                .Property(b => b.BookingStatus)
+                .HasConversion<string>();
+            modelBuilder.Entity<Booking>()
+                .Property(b => b.BookingType)
+                .HasConversion<string>();
             modelBuilder.Entity<UserAddress>()
                 .HasMany(a => a.Bookings)
                 .WithOne(b => b.UserAddress)
@@ -67,7 +77,52 @@ namespace Infrastructure.Context
                 .HasOne(up => up.Plan)
                 .WithMany(p => p.UserPlans)
                 .HasForeignKey(up => up.PlanId);
-                
+            modelBuilder.Entity<Cart>()
+                 .HasOne(c => c.User)
+                 .WithOne(u => u.Cart)
+                 .HasForeignKey<Cart>(c => c.UserId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CartItem>()
+                .HasOne(ci => ci.Cart)
+                .WithMany(c => c.CartItems)
+                .HasForeignKey(ci => ci.CartId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CartItem>()
+                .HasOne(ci => ci.SwappedFromBooking)
+                .WithMany()
+                .HasForeignKey(ci => ci.SwappedFromBookingId)
+                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<ServiceBookingItem>()
+                .HasOne(s => s.Service)
+                .WithMany(s => s.ServiceBookingItems)
+                .HasForeignKey(s => s.ServiceId);
+            modelBuilder.Entity<ServiceBookingItem>()
+                .HasOne(s => s.Booking)
+                .WithMany(b => b.ServiceBookingItems)
+                .HasForeignKey(s => s.BookingId);
+
+            // Decimal precision configuration (Prevents silent truncation warnings)
+            modelBuilder.Entity<Plant>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Plan>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Booking>()
+                .Property(b => b.TotalPrice)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<BookingItem>()
+                .Property(b => b.TotalPrice)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<CartItem>()
+                .Property(ci => ci.PriceDifference)
+                .HasColumnType("decimal(18,2)");
+
 
             // BookingItem -> Booking (Cascade delete OK)
             modelBuilder.Entity<BookingItem>()
@@ -79,7 +134,7 @@ namespace Infrastructure.Context
             // BookingItem -> Plant (Restrict delete to avoid multiple cascade paths)
             modelBuilder.Entity<BookingItem>()
                 .HasOne(b => b.Plant)
-                .WithMany()
+                .WithMany(p=>p.BookingItems)
                 .HasForeignKey(b => b.PlantId)
                 .OnDelete(DeleteBehavior.Restrict);
 

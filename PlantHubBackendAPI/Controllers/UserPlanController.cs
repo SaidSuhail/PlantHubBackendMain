@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace PlantHubBackendAPI.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class UserPlanController:ControllerBase
     {
         private readonly IUserPlanService _userPlanService;
@@ -29,6 +31,13 @@ namespace PlantHubBackendAPI.Controllers
         public async Task<IActionResult>DetPlansForUser(int userId)
         {
             var result = await _userPlanService.GetUsersPlan(userId);
+            return Ok(result);
+        }
+        // ✅ NEW endpoint to get all user plans
+        [HttpGet("All")]
+        public async Task<IActionResult> GetAllUserPlans()
+        {
+            var result = await _userPlanService.GetAllUserPlansAsync();
             return Ok(result);
         }
     }

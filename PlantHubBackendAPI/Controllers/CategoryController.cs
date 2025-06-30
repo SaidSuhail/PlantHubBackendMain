@@ -16,26 +16,35 @@ namespace PlantHubBackendAPI.Controllers
         {
             _categoryService = categoryService;
         }
-        [Authorize]
+
+        //[Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllCategories()
         {
-            var result = await _categoryService.GetCategories();
-            return Ok(new ApiResponse<IEnumerable<CategoryDto>>(true, "fetched categories", result, null));
+            var response = await _categoryService.GetCategories();
+            if (!response.Success)
+                return StatusCode(500, response);
+            return Ok(response);
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> AddCategory([FromBody]CategoryAddDto category)
         {
-            var result = await _categoryService.AddCategory(category);
-            return Ok(result);
+            var response = await _categoryService.AddCategory(category);
+            if (!response.Success)
+                return BadRequest(response);
+            return CreatedAtAction(nameof(GetAllCategories), null, response);
         }
+
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult>DeleteCategory(int id)
         {
-            var result = await _categoryService.RemoveCategory(id);
-            return Ok(result);
+            var response = await _categoryService.RemoveCategory(id);
+            if (!response.Success)
+                return NotFound(response);
+            return Ok(response);
         }
 
     }

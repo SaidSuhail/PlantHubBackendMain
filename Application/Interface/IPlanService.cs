@@ -10,10 +10,10 @@ namespace Application.Interface
 {
    public interface IPlanService
     {
-        Task<IEnumerable<PlanDto>> GetAllPlansAsync();
-        Task<PlanDto?> GetPlanByIdAsync(int id);
-        Task<PlanDto?> CreatePlanAsync(PlanDto planDto);
-        Task<PlanDto?> UpdatePlanAsync(int id,UpdatePlanDto updateDto);
-        Task DeletePlanAsync(int id);
+        Task<ApiResponse<IEnumerable<PlanDto>>> GetAllPlansAsync();
+        Task<ApiResponse<PlanDto?>> GetPlanByIdAsync(int id);
+        Task<ApiResponse<PlanDto?>> CreatePlanAsync(PlanDto planDto);
+        Task<ApiResponse<PlanDto?>> UpdatePlanAsync(int id,UpdatePlanDto updateDto);
+        Task <ApiResponse<bool>> DeletePlanAsync(int id);
     }
 }

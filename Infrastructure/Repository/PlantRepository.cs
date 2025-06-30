@@ -40,7 +40,24 @@ namespace Infrastructure.Repository
         }
         public async Task<List<Plant>>SearchPlantsAsync(string keyword)
         {
-            return await _context.Plants.Include(p => p.Category).Where(p => p.Name.ToLower().Contains(keyword.ToLower())).ToListAsync();
+            //return await _context.Plants.Include(p => p.Category)
+            //    .Where(p =>
+            //    p.Name.ToLower().Contains(keyword.ToLower())).ToListAsync();
+            keyword = keyword.ToLower();
+            bool isNumeric = decimal.TryParse(keyword, out decimal priceValue);
+
+            return await _context.Plants
+                .Include(p => p.Category) // Ensure category is included
+                .Where(p =>
+                    p.Name.ToLower().Contains(keyword) ||
+                    p.Color.ToLower().Contains(keyword) ||
+                    p.LatinName.ToLower().Contains(keyword) ||                  // ✅ Added
+                    p.CareLevel.ToString().ToLower().Contains(keyword) ||       // ✅ Added
+                    p.Category.CategoryName.ToLower().Contains(keyword) ||
+                    p.Price.ToString().Contains(keyword) ||           // partial match
+                    (isNumeric && p.Price == priceValue)              // exact match
+                )
+                .ToListAsync();
         }
         public async Task<bool>DeletePlantAsync(Plant plant)
         {

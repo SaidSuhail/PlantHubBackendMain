@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Enum;
 
 namespace Domain.Model
 {
@@ -13,12 +14,16 @@ namespace Domain.Model
         public int PlanId { get; set; }
         public int UserAddressId { get; set; }
         public DateTime BookingDate { get; set; }
-        public string? BookingStatus { get; set; }
+        public  BookingStatus BookingStatus { get; set; }
         public decimal TotalPrice { get; set; }
         public string? TransactionId { get; set; }
+        public BookingType BookingType { get; set; }
         public virtual User? User { get; set; }
         public virtual Plan? Plan { get; set; }
+        public int? ProviderId { get; set; }
+        public virtual Provider? AssignedProvider { get; set; }
         public virtual UserAddress UserAddress { get; set; }
+        public virtual ICollection<ServiceBookingItem> ServiceBookingItems { get; set; }
         public virtual ICollection<BookingItem> BookingItems { get; set; }
     }
 }

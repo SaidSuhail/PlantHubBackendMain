@@ -9,6 +9,7 @@ namespace Application.Interface
 {
     public interface IRoleService
     {
-        Task<bool> ChangeUserRole(ChangeRoleDTO dto);
+        Task<ApiResponse<bool>> ChangeUserRole(ChangeRoleDTO dto);
+        Task<ApiResponse<List<ProviderDto>>> GetAllProvidersAsync();
     }
 }

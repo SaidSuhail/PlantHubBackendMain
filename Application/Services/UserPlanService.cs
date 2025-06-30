@@ -22,41 +22,84 @@ namespace Application.Services
             _userPlanRepo = userPlanRepo;
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<ApiResponse<UserPlanDto>>SubscribePlan(AddUserPlanDto dto)
+        //public async Task<ApiResponse<UserPlanDto>>SubscribePlan(AddUserPlanDto dto)
+        //{
+        //    var userPlans = await _userPlanRepo.GetUserPlansByUserId(dto.UserId);
+        //    foreach(var plan in userPlans)
+        //    {
+        //        if(plan.IsActive && plan.EndDate.Date < DateTime.UtcNow.Date)
+        //        {
+        //            plan.IsActive = false;
+        //        }
+        //    }
+        //    await _userPlanRepo.SaveAsync();
+
+        //    bool hasActivePlan = await _userPlanRepo.HasActivePlanAsync(dto.UserId);
+        //    if (hasActivePlan)
+        //    {
+        //        return new ApiResponse<UserPlanDto>(false, "User Already Has An Active plan", null, new { error = "Active plan exists" });
+        //    }
+
+        //    var userPlan = _mapper.Map<UserPlan>(dto);
+        //    userPlan.IsActive = true;
+        //    userPlan.StartDate = DateTime.UtcNow.Date;
+        //    userPlan.EndDate = userPlan.StartDate.AddMonths(3);
+        //    var userId = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
+        //    var userRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
+        //    var createdBy = string.IsNullOrEmpty(userId) ? "Self" : $"{userRole} - {userId}";
+        //    userPlan.CreatedAt = DateTime.UtcNow;
+        //    userPlan.CreatedBy = createdBy;
+        //    await _userPlanRepo.AddAsync(userPlan);
+        //    await _userPlanRepo.SaveAsync();
+
+        //    var result =  _mapper.Map<UserPlanDto>(userPlan);
+        //    //result.StartDate = userPlan.StartDate.ToString("yyyy-MM-dd");
+        //    //result.EndDate = userPlan.EndDate.ToString("yyyy-MM-dd");
+        //    return new ApiResponse<UserPlanDto>(true, "plan subscribed successfully", result);
+        //}
+        public async Task<ApiResponse<UserPlanDto>> SubscribePlan(AddUserPlanDto dto)
         {
             var userPlans = await _userPlanRepo.GetUserPlansByUserId(dto.UserId);
-            foreach(var plan in userPlans)
+            foreach (var plan in userPlans)
             {
-                if(plan.IsActive && plan.EndDate.Date < DateTime.UtcNow.Date)
+                if (plan.IsActive && plan.EndDate.Date < DateTime.UtcNow.Date)
                 {
                     plan.IsActive = false;
                 }
             }
             await _userPlanRepo.SaveAsync();
 
+            // ✅ Check if the role is 'User'
+            var userId = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
+            var userRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
+
+            if (userRole == null || !userRole.Equals("User", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ApiResponse<UserPlanDto>(false, "Only users are allowed to subscribe to a plan", null, new { error = "Access denied" });
+            }
+
             bool hasActivePlan = await _userPlanRepo.HasActivePlanAsync(dto.UserId);
             if (hasActivePlan)
             {
                 return new ApiResponse<UserPlanDto>(false, "User Already Has An Active plan", null, new { error = "Active plan exists" });
             }
-           
+
             var userPlan = _mapper.Map<UserPlan>(dto);
             userPlan.IsActive = true;
             userPlan.StartDate = DateTime.UtcNow.Date;
             userPlan.EndDate = userPlan.StartDate.AddMonths(3);
-            var userId = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
-            var userRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
+
             var createdBy = string.IsNullOrEmpty(userId) ? "Self" : $"{userRole} - {userId}";
             userPlan.CreatedAt = DateTime.UtcNow;
             userPlan.CreatedBy = createdBy;
+
             await _userPlanRepo.AddAsync(userPlan);
             await _userPlanRepo.SaveAsync();
 
-            var result =  _mapper.Map<UserPlanDto>(userPlan);
-            //result.StartDate = userPlan.StartDate.ToString("yyyy-MM-dd");
-            //result.EndDate = userPlan.EndDate.ToString("yyyy-MM-dd");
-            return new ApiResponse<UserPlanDto>(true, "plan subscribed successfully", result);
+            var result = _mapper.Map<UserPlanDto>(userPlan);
+            return new ApiResponse<UserPlanDto>(true, "Plan subscribed successfully", result);
         }
+
         public async Task<ApiResponse<string>> UnsubscribePlan(int userId)
         {
             var plan = await _userPlanRepo.GetUserPlansByUserId(userId);
@@ -77,6 +120,12 @@ namespace Application.Services
             var plans = await _userPlanRepo.GetUserPlansByUserId(userId);
             return _mapper.Map<List<UserPlanDto>>(plans);
         }
+        public async Task<List<UserPlanDto>> GetAllUserPlansAsync()
+        {
+            var plans = await _userPlanRepo.GetAllUserPlansAsync();
+            return _mapper.Map<List<UserPlanDto>>(plans);
+        }
+
 
     }
 }

@@ -12,6 +12,8 @@ namespace Application.Interface
         Task<List<UserPlan>> GetUserPlansByUserId(int userId);
         Task AddAsync(UserPlan userPlan);
         Task<bool> HasActivePlanAsync(int userId);
+        Task<List<UserPlan>> GetAllUserPlansAsync();
+
         Task SaveAsync();
     }
 }

@@ -15,6 +15,7 @@ namespace Application.DTOs
         public decimal Price { get; set; }
         public string ImageUrl { get; set; }
         public int Stock { get; set; }
+        public string CareLevel { get; set; }
         public string Color { get; set; }
         public string CategoryName { get; set; }
         public string ProviderName { get; set; }

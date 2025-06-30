@@ -7,6 +7,7 @@ using Application.DTOs;
 using Application.Interface;
 using AutoMapper;
 using Domain.Model;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Services
 {
@@ -14,16 +15,26 @@ namespace Application.Services
     {
         private readonly ICategoryRepository _categoryRepo;
         private readonly IMapper _mapper;
-
-        public CategoryService(ICategoryRepository categoryRepo, IMapper mapper)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public CategoryService(IHttpContextAccessor httpContextAccessor, ICategoryRepository categoryRepo, IMapper mapper)
         {
             _categoryRepo = categoryRepo;
             _mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<List<CategoryDto>> GetCategories()
+        public async Task<ApiResponse<List<CategoryDto>>> GetCategories()
         {
-            var categories = await _categoryRepo.GetAll();
-            return _mapper.Map<List<CategoryDto>>(categories);
+            try
+            {
+                var categories = await _categoryRepo.GetAll();
+                var categoryDto =  _mapper.Map<List<CategoryDto>>(categories);
+                return new ApiResponse<List<CategoryDto>>(true, "Ctaegories retrieved successfully", categoryDto, null);
+            }
+            catch(Exception ex)
+            {
+                return new ApiResponse<List<CategoryDto>>(false, "Failed To Retrieve Category", null, ex.Message);
+            }
+           
         }
         public async Task<ApiResponse<CategoryAddDto>>AddCategory(CategoryAddDto category)
         {
@@ -32,7 +43,13 @@ namespace Application.Services
             {
                 return new ApiResponse<CategoryAddDto>(false, "Category Already exist", null, "Try Another name");
             }
+            var userId = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
+            var userRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
+            var createdBy = string.IsNullOrEmpty(userId) ? "Self" : $"{userRole} - {userId}";
+            
             var entity = _mapper.Map<Category>(category);
+            entity.CreatedAt = DateTime.UtcNow;
+            entity.CreatedBy = createdBy;
             await _categoryRepo.Add(entity);
             await _categoryRepo.SaveChanges();
             var result = _mapper.Map<CategoryAddDto>(entity);
@@ -43,17 +60,30 @@ namespace Application.Services
             var category = await _categoryRepo.GetById(id);
             if (category == null)
                 return new ApiResponse<string>(false, "Category not found", "", "Invalid ID");
-
+            var userId = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
+            var userRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
+            var createdBy = string.IsNullOrEmpty(userId) ? "Self" : $"{userRole} - {userId}";
             var products = await _categoryRepo.GetPlantsByCategoryId(id);
+            category.UpdatedAt = DateTime.UtcNow.Date;
+            category.UpdatedBy = createdBy;
             _categoryRepo.RemoveProducts(products);
             _categoryRepo.RemoveCategory(category);
             await _categoryRepo.SaveChanges();
 
             return new ApiResponse<string>(true, "Category deleted", "Done", null);
         }
-        public async Task<bool> CategoryExistsAsync(int categoryId)
+        public async Task<ApiResponse<bool>> CategoryExistsAsync(int categoryId)
         {
-            return await _categoryRepo.CategoryExistsAsync(categoryId);
+            try
+            {
+                var exists =  await _categoryRepo.CategoryExistsAsync(categoryId);
+                return new ApiResponse<bool>(true, "Category existance checked", exists,null);
+
+            }
+            catch(Exception ex)
+            {
+                return new ApiResponse<bool>(false, "Failed To Check Category Existance", false, ex.Message);
+            }
         }
 
     }

@@ -21,23 +21,47 @@ namespace Application.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<bool> ChangeUserRole(ChangeRoleDTO dto)
+        public async Task<ApiResponse<bool>> ChangeUserRole(ChangeRoleDTO dto)
         {
-            var user = await _roleRepository.GetUserByIdAsync(dto.UserId);
-            if (user == null)
-                return false;
-            if (!Enum.TryParse<UserRole>(dto.NewRole, true, out var newRole))
-                return false;
-            var performedById = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
-            var performedByRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
-            var performedBy = $"{performedByRole} - {performedById}";
+            try
+            {
+                    var user = await _roleRepository.GetUserByIdAsync(dto.UserId);
+                    if (user == null)
+                    return new ApiResponse<bool>(false, "User Not Found", false);
 
-            user.Role = newRole;
-            user.UpdatedAt = DateTime.Now;
-            user.UpdatedBy = performedBy;
+                if (!Enum.TryParse<UserRole>(dto.NewRole, true, out var newRole))
+                    return new ApiResponse<bool>(false, "Invalid Role Provider", false);
+                    var performedById = _httpContextAccessor.HttpContext?.Items["UserId"]?.ToString();
+                    var performedByRole = _httpContextAccessor.HttpContext?.Items["UserRole"]?.ToString();
+                    var performedBy = $"{performedByRole} - {performedById}";
 
-            await _roleRepository.ChangeUserRoleAsync(user, newRole);
-            return true;
+                    user.Role = newRole;
+                    user.UpdatedAt = DateTime.Now;
+                    user.UpdatedBy = performedBy;
+
+                    await _roleRepository.ChangeUserRoleAsync(user, newRole);
+                return new ApiResponse<bool>(true, "User Role Updated Successfully",true);
+            }catch(Exception ex)
+            {
+                return new ApiResponse<bool>(false, "Error Occured While Changing Role",false,ex.Message);
+            }
+          
+        }
+        public async Task<ApiResponse<List<ProviderDto>>> GetAllProvidersAsync()
+        {
+            var providers = await _roleRepository.GetAllProvidersAsync();
+
+            var result = providers.Select(p => new ProviderDto
+            {
+                Id = p.Id,
+                UserId = p.UserId,
+                ProviderName = p.ProviderName,
+                ContactInfo = p.ContactInfo,
+                UserName = p.User?.UserName,
+                UserEmail = p.User?.UserEmail
+            }).ToList();
+
+            return new ApiResponse<List<ProviderDto>>(true, "Providers fetched successfully", result);
         }
     }
 }

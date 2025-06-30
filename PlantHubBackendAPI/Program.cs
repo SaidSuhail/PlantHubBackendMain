@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.Google;
+using Infrastructure.SignalR;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -66,6 +67,22 @@ builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<IUserPlanRepository, UserPlanRepository>();
 builder.Services.AddScoped<IUserPlanService, UserPlanService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleChangeRequestRepository, RoleChangeRequestRepository>();
+builder.Services.AddScoped<IRoleChangeRequestService, RoleChangeRequestService>();
+builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
+builder.Services.AddScoped<IUserAddressService, UserAddressService>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddHttpContextAccessor();
 // JWT Authentication Configuration 
 builder.Services.AddAuthentication(options =>
@@ -100,6 +117,7 @@ builder.Services.AddAuthentication(options =>
     options.CallbackPath = "/auth/google/callback";  // Make sure this matches your Google Cloud redirect URI
 });
 
+builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
@@ -129,7 +147,7 @@ app.Use(async (context, next) =>
     context.Response.Headers.Remove("Cross-Origin-Opener-Policy");
     await next();
 });
-
+app.MapHub<NotificationHub>("/hubs/notification");
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();

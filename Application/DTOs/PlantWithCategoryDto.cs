@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Model;
 
 namespace Application.DTOs
 {
-   public class PlantWithCategoryDto
+   public class PlantWithCategoryDto:BaseEntity
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -14,6 +15,9 @@ namespace Application.DTOs
         public string Description { get; set; }
         public decimal Price { get; set; }
         public string ImageUrl { get; set; }
+        public string? CareLevel { get; set; }
+        public int Stock { get; set; }
+
         public string Color { get; set; }
         public string CategoryName { get; set; }
     }

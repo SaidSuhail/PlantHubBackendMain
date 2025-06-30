@@ -25,6 +25,14 @@ namespace Infrastructure.Repository
         {
             await _context.Userplans.AddAsync(userPlan);
         }
+        public async Task<List<UserPlan>> GetAllUserPlansAsync()
+        {
+            return await _context.Userplans
+                .Include(up => up.Plan)
+                //.Include(up => up.User) // if you want user info too
+                .ToListAsync();
+        }
+
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();

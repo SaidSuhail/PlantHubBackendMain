@@ -13,7 +13,7 @@ namespace Domain.Model
         public int PlantId { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
-        public string PlantImage { get; set; }
+        public string? PlantImage { get; set; }
         public virtual Booking Booking { get; set; }
         public virtual Plant Plant { get; set; }
     }

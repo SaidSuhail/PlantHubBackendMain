@@ -13,6 +13,7 @@ namespace Application.DTOs
         public string? Description { get; set; }
         public decimal? Price { get; set; }
         public string? Color { get; set; }
+        public string? CareLevel { get; set; }
         public int? CategoryId { get; set; }
         public int? ProviderId { get; set; }
         public int? Stock { get; set; }
